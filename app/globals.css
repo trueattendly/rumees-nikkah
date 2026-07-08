@@ -1,26 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap');
+
 @import "tailwindcss";
 
+/* ── CSS Variables ──────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cream: #f9f6f0;
+  --gold: #c5a880;
+  --gold-deep: #a07848;
+  --gold-light: #e8d5b0;
+  --olive: #6b7a4e;
+  --terracotta: #c4856a;
+  --rose-dust: #d4a0a0;
+  --dark: #2c2416;
+
+  /* Smooth scroll easing via CSS */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Global Reset ───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Smooth Scroll — Native CSS loco-scroll feel ─────────── */
+html {
+  /* Native smooth scroll for anchor links */
+  scroll-behavior: smooth;
+  /* Prevent layout shifts from scrollbar appearing */
+  scrollbar-gutter: stable;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--cream);
+  overflow-x: hidden;
+  font-family: 'Jost', sans-serif;
+  color: var(--dark);
+  /* Subpixel anti-aliasing for crisper text */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Grain texture — fixed paper feel ───────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.55;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--gold-light), var(--gold));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--gold-deep); }
+
+/* ── Typography helpers ────────────────────────────────────── */
+.font-script    { font-family: 'Great Vibes', cursive; }
+.font-serif     { font-family: 'Cormorant Garamond', serif; }
+.font-playfair  { font-family: 'Playfair Display', serif; }
+.font-sans-elegant { font-family: 'Jost', sans-serif; letter-spacing: 0.15em; }
+
+/* ── Gold gradient text ──────────────────────────────────── */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #c5a880 0%, #e8d5b0 40%, #a07848 70%, #c5a880 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Paper texture section bg ────────────────────────────── */
+.paper-texture {
+  background-color: var(--cream);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(197,168,128,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(107,122,78,0.04)  0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, rgba(196,133,106,0.04) 0%, transparent 50%);
+}
+
+/* ── Gold divider ─────────────────────────────────────────── */
+.gold-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.gold-divider::before,
+.gold-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* ── Bismillah glow ──────────────────────────────────────── */
+.bismillah-glow {
+  filter: drop-shadow(0 0 20px rgba(197,168,128,0.45));
+  transition: filter 0.6s ease;
+}
+.bismillah-glow:hover {
+  filter: drop-shadow(0 0 36px rgba(197,168,128,0.7));
+}
+
+/* ── Couple silhouette ────────────────────────────────────── */
+.couple-silhouette {
+  filter: drop-shadow(0 10px 40px rgba(44,36,22,0.2));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════════ */
+
+/* Page entry — fade up from nothing */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Gentle float — for CTAs, scroll hints */
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+/* Gold pulse — for RSVP button glow */
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 8px 30px rgba(160,120,72,0.35); }
+  50%       { box-shadow: 0 8px 50px rgba(160,120,72,0.65), 0 0 80px rgba(197,168,128,0.2); }
+}
+
+/* Shimmer sweep — for gold lines */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* Soft rotate — for ornamental elements */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Reveal from left */
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Reveal from right */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Scale reveal */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Gold line draw */
+@keyframes draw-line {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Fade up — used on scroll-reveal */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Sparkle twinkle */
+@keyframes twinkle {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.6); }
+}
+
+/* ── Utility animation classes ───────────────────────────── */
+.animate-page-enter  { animation: page-enter  0.9s var(--ease-out-expo) both; }
+.animate-float       { animation: float-gentle 4s ease-in-out infinite; }
+.animate-pulse-gold  { animation: pulse-gold   3s ease-in-out infinite; }
+.animate-spin-slow   { animation: spin-slow   20s linear infinite; }
+.animate-twinkle     { animation: twinkle      2s ease-in-out infinite; }
+
+/* Scroll-reveal: elements start invisible, JS/GSAP activates these */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.75s var(--ease-out-expo),
+    transform 0.75s var(--ease-out-expo);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition:
+    opacity 0.75s var(--ease-out-expo),
+    transform 0.75s var(--ease-out-expo);
+}
+.reveal-left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(32px);
+  transition:
+    opacity 0.75s var(--ease-out-expo),
+    transform 0.75s var(--ease-out-expo);
+}
+.reveal-right.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Stagger helper — set via inline style: --delay: 0.1s */
+.reveal-stagger {
+  transition-delay: var(--delay, 0s);
+}
+
+/* ── Card 3D tilt ────────────────────────────────────────── */
+.card-3d {
+  transform-style: preserve-3d;
+  transition:
+    transform 0.45s var(--ease-out-expo),
+    box-shadow 0.45s ease;
+  will-change: transform;
+}
+.card-3d:hover {
+  box-shadow: 0 30px 70px rgba(44,36,22,0.14), 0 0 40px rgba(197,168,128,0.12);
+}
+
+/* ── Button interactions ─────────────────────────────────── */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Gold shimmer border ─────────────────────────────────── */
+.gold-shimmer-border {
+  position: relative;
+  overflow: hidden;
+}
+.gold-shimmer-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(197,168,128,0.4) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Soft selection color ────────────────────────────────── */
+::selection {
+  background: rgba(197,168,128,0.3);
+  color: var(--dark);
+}
+
+/* ── Focus ring (accessibility) ─────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
 }

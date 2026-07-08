@@ -1,65 +1,562 @@
-import Image from "next/image";
+"use client";
+import { useRef, useState, useEffect } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion, AnimatePresence } from "framer-motion";
+import { Calendar, Clock, X, Heart, ExternalLink, QrCode, Music, VolumeX } from "lucide-react";
+import AnimateMarriage from "@/components/AnimateMarriage";
+import Lenis from "lenis";
 
-export default function Home() {
+gsap.registerPlugin(ScrollTrigger);
+
+/* ─── Global smooth-scroll ticker (Lenis + GSAP integration) ─────────── */
+function useSmoothScroll() {
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      gsap.ticker.remove((time) => lenis.raf(time * 1000));
+      lenis.destroy();
+    };
+  }, []);
+}
+
+/* ─── 1. Cinematic Loading Screen ───────────────────────── */
+function LoadingScreen({ onComplete }: { onComplete: () => void }) {
+  const [visible, setVisible] = useState(true);
+
+  useGSAP(() => {
+    document.body.style.overflow = 'hidden';
+    const tl = gsap.timeline({
+      onComplete: () => {
+        document.body.style.overflow = '';
+        setVisible(false);
+        onComplete();
+      }
+    });
+    
+    tl.fromTo(".loader-logo", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 1.5, ease: "power3.out" })
+      .to(".loader-logo", { opacity: 0, y: -30, duration: 0.8, delay: 0.8, ease: "power2.in" })
+      .to(".loader-bg", { yPercent: -100, duration: 1.2, ease: "expo.inOut" }, "-=0.3");
+      
+    return () => { document.body.style.overflow = ''; }
+  }, []);
+
+  if (!visible) return null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="loader-bg fixed inset-0 z-[999] bg-[#f9f6f0] flex items-center justify-center">
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }} />
+      <div className="loader-logo">
+        <svg viewBox="0 0 320 80" width="280" height="80">
+          <text x="160" y="52" textAnchor="middle" fontSize="44" fill="#c5a880" style={{ fontFamily: "'Scheherazade New',serif" }}>بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</text>
+        </svg>
+      </div>
     </div>
+  );
+}
+
+/* ─── 2. Floating Audio Player ──────────────────────────── */
+function AudioPlayer() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const autoplayAttempted = useRef(false);
+
+  useEffect(() => {
+    if (autoplayAttempted.current) return;
+    autoplayAttempted.current = true;
+
+    const playAudio = async () => {
+      if (audioRef.current) {
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+        } catch (error) {
+          // Autoplay blocked by browser policy. Wait for first interaction.
+          const handleFirstInteraction = async () => {
+            if (audioRef.current) {
+              try {
+                await audioRef.current.play();
+                setIsPlaying(true);
+              } catch (e) { console.log(e); }
+            }
+            window.removeEventListener('click', handleFirstInteraction);
+            window.removeEventListener('scroll', handleFirstInteraction);
+            window.removeEventListener('touchstart', handleFirstInteraction);
+          };
+          window.addEventListener('click', handleFirstInteraction);
+          window.addEventListener('scroll', handleFirstInteraction, { once: true });
+          window.addEventListener('touchstart', handleFirstInteraction, { once: true });
+        }
+      }
+    };
+    playAudio();
+  }, []);
+
+  const toggle = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.log(e));
+      }
+    }
+  };
+
+  return (
+    <div className="fixed bottom-6 right-6 z-[100]">
+      <audio ref={audioRef} src="/bgm.mp3" loop />
+      <button onClick={toggle} className="w-12 h-12 rounded-full bg-white/70 backdrop-blur-md shadow-[0_8px_30px_rgba(44,36,22,0.1)] border border-[#c5a880]/40 flex items-center justify-center text-[#a07848] transition-transform hover:scale-110">
+        {isPlaying ? <Music size={18} className="animate-[spin_4s_linear_infinite]" /> : <VolumeX size={18} />}
+      </button>
+    </div>
+  );
+}
+
+/* ─── 3. Dynamic RSVP Modal (Formspree Ready) ───────────── */
+function RSVPModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [name, setName] = useState("");
+  const [guests, setGuests] = useState("1");
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // NOTE: To make this functional, create a free form at Formspree.io and replace the URL below.
+    const formspreeEndpoint = "https://formspree.io/f/YOUR_FORM_ID_HERE"; 
+    
+    try {
+      if (formspreeEndpoint !== "https://formspree.io/f/YOUR_FORM_ID_HERE") {
+        await fetch(formspreeEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, guests })
+        });
+      } else {
+        // Simulate network delay for the placeholder
+        await new Promise(r => setTimeout(r, 1000));
+      }
+      setSent(true);
+    } catch {
+      setSent(true); // Fallback
+    }
+    setLoading(false);
+  };
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 200 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div className="absolute inset-0" style={{ background: "rgba(44,36,22,0.65)", backdropFilter: "blur(10px)" }} onClick={onClose} />
+          <motion.div className="relative w-full max-w-md rounded-[32px] p-10"
+            style={{ background: "#f9f6f0", border: "1px solid rgba(197,168,128,0.4)", zIndex: 1, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)" }}
+            initial={{ scale: 0.85, y: 40 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.85, y: 40 }} transition={{ type: "spring", damping: 22, stiffness: 200 }}>
+            <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full hover:bg-[#e8d5b0] transition-colors">
+              <X size={18} color="#a07848" />
+            </button>
+            {sent ? (
+              <div className="text-center py-8">
+                <div className="text-5xl mb-4">🤍</div>
+                <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "2rem", color: "#2c2416" }}>JazakAllah Khair!</h3>
+                <p style={{ fontFamily: "'Jost',sans-serif", color: "#a07848", marginTop: 8 }}>Your RSVP has been received. May Allah bless you.</p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-center mb-6" style={{ fontFamily: "'Great Vibes',cursive", fontSize: "2.8rem", color: "#2c2416" }}>RSVP</h3>
+                <form onSubmit={submit} className="flex flex-col gap-5">
+                  <div>
+                    <label style={{ fontFamily: "'Jost',sans-serif", fontSize: "0.72rem", letterSpacing: "0.2em", color: "#a07848", textTransform: "uppercase" }}>Your Name</label>
+                    <input required value={name} onChange={e => setName(e.target.value)}
+                      className="w-full mt-2 px-4 py-4 rounded-2xl outline-none transition-all border border-[#c5a880]/30 focus:border-[#a07848] bg-white/50 shadow-inner"
+                      style={{ fontFamily: "'Jost',sans-serif", color: "#2c2416" }} placeholder="Enter your full name" />
+                  </div>
+                  <div>
+                    <label style={{ fontFamily: "'Jost',sans-serif", fontSize: "0.72rem", letterSpacing: "0.2em", color: "#a07848", textTransform: "uppercase" }}>Number of Guests</label>
+                    <select value={guests} onChange={e => setGuests(e.target.value)}
+                      className="w-full mt-2 px-4 py-4 rounded-2xl outline-none transition-all border border-[#c5a880]/30 focus:border-[#a07848] bg-white/50 shadow-inner"
+                      style={{ fontFamily: "'Jost',sans-serif", color: "#2c2416" }}>
+                      {["1","2","3","4","5+"].map(n => <option key={n}>{n}</option>)}
+                    </select>
+                  </div>
+                  <button type="submit" disabled={loading} className="w-full py-4 rounded-2xl mt-4 transition-all hover:scale-[1.02] flex justify-center items-center h-14"
+                    style={{ background: "linear-gradient(135deg,#c5a880,#a07848)", color: "#fff8ee", fontFamily: "'Jost',sans-serif", letterSpacing: "0.2em", fontSize: "0.8rem", textTransform: "uppercase", boxShadow: "0 10px 20px rgba(160,120,72,0.3)" }}>
+                    {loading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : "Confirm Attendance"}
+                  </button>
+                </form>
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ─── Hero section ──────────────────────────────────────── */
+function HeroSection({ isLoaded }: { isLoaded: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const tl = gsap.timeline({ scrollTrigger: { trigger: ref.current, start: "top top", end: "+=100%", scrub: 1 } });
+    tl.to(titleRef.current, { scale: 1.25, opacity: 0, filter: "blur(10px)", ease: "none" });
+  }, { scope: ref });
+
+  return (
+    <section ref={ref} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden paper-texture" style={{ paddingTop: "5vh" }}>
+      <img src="/floral-border.png" alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ opacity: 0.45, zIndex: 1 }} />
+      <div ref={titleRef} className="relative flex flex-col items-center text-center px-6" style={{ zIndex: 10, opacity: isLoaded ? 1 : 0 }}>
+        
+        {isLoaded && (
+          <>
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.6, ease: "easeOut" }} className="mb-6 bismillah-glow">
+              <svg viewBox="0 0 320 80" style={{ width: "clamp(200px,40vw,320px)", height: "auto" }} aria-label="Bismillah">
+                <defs>
+                  <linearGradient id="bismGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#c5a880" /><stop offset="50%" stopColor="#e8d5b0" /><stop offset="100%" stopColor="#a07848" />
+                  </linearGradient>
+                </defs>
+                <text x="160" y="52" textAnchor="middle" fontSize="44" fill="url(#bismGrad)" style={{ fontFamily: "'Scheherazade New',serif" }}>بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</text>
+              </svg>
+            </motion.div>
+
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 1.2 }}
+              style={{ fontFamily: "'Jost',sans-serif", fontSize: "0.7rem", letterSpacing: "0.35em", color: "#a07848", textTransform: "uppercase", marginBottom: "1rem" }}>
+              Save the Date
+            </motion.p>
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 1 }}
+              style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(1rem,2vw,1.3rem)", color: "#6b5a3e", marginBottom: "0.5rem" }}>
+              Welcome to the Nikkah of
+            </motion.p>
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3, duration: 1.2 }}
+              style={{ fontFamily: "'Great Vibes',cursive", fontSize: "clamp(2.8rem,8vw,6rem)", color: "#2c2416", lineHeight: 1.05, marginBottom: "0.2rem" }}>
+              Muhammed Nizamudheen
+            </motion.h1>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.7, duration: 0.8 }}
+              style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(1.2rem,3vw,2rem)", color: "#a07848", letterSpacing: "0.1em" }}>
+              &amp;
+            </motion.p>
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.9, duration: 1.2 }}
+              style={{ fontFamily: "'Great Vibes',cursive", fontSize: "clamp(2.8rem,8vw,6rem)", color: "#2c2416", lineHeight: 1.05, marginBottom: "1.5rem" }}>
+              Rumeeza V V
+            </motion.h1>
+
+            <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }} transition={{ delay: 2.2, duration: 1 }} className="gold-divider w-full max-w-sm mb-5">
+              <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.1rem", color: "#a07848", fontStyle: "italic" }}>
+                23 July 2026 · Thursday
+              </span>
+            </motion.div>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5, duration: 1 }}
+              style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(0.9rem,1.8vw,1.15rem)", color: "#6b5a3e", fontStyle: "italic", maxWidth: 480, lineHeight: 1.8 }}>
+              Cordially invite you to grace the occasion of their Nikkah and bless the couple.
+            </motion.p>
+
+            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="mt-12 flex flex-col items-center gap-1" style={{ color: "#c5a880" }}>
+              <span style={{ fontFamily: "'Jost',sans-serif", fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase" }}>scroll</span>
+              <svg width="20" height="26" viewBox="0 0 20 26" fill="none">
+                <path d="M10 4 L10 18 M6 14 L10 18 L14 14" stroke="#c5a880" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </motion.div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ─── 4. Elegant Countdown Timer ────────────────────────── */
+function CountdownTimer() {
+  const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    // Target Date: July 23, 2026 at 11:30 AM
+    const target = new Date("2026-07-23T11:30:00").getTime();
+    
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const diff = target - now;
+      if (diff <= 0) return clearInterval(interval);
+      
+      setTimeLeft({
+        d: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        h: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        m: Math.floor((diff / 1000 / 60) % 60),
+        s: Math.floor((diff / 1000) % 60),
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex justify-center gap-4 sm:gap-6 lg:gap-8 my-10 countdown-el">
+      {Object.entries(timeLeft).map(([label, val]) => (
+        <div key={label} className="flex flex-col items-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl sm:rounded-[24px] flex items-center justify-center bg-white/40 backdrop-blur-md shadow-lg border border-[#c5a880]/30 transition-transform hover:scale-105">
+            <span className="font-serif text-[1.8rem] sm:text-[2.5rem] lg:text-[3rem] text-[#2c2416] font-medium tracking-tight">
+              {val.toString().padStart(2, '0')}
+            </span>
+          </div>
+          <span className="font-sans text-[0.65rem] tracking-[0.25em] text-[#a07848] uppercase mt-4">
+            {label === 'd' ? 'Days' : label === 'h' ? 'Hours' : label === 'm' ? 'Mins' : 'Secs'}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── 3D QR Scanner Card ────────────────────────────────── */
+function QRScannerCard({ title, subtitle, link }: { title: string, subtitle: string, link: string }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  
+  const handleMove = (e: React.MouseEvent) => {
+    const el = ref.current; if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width - 0.5) * 16;
+    const y = ((e.clientY - r.top) / r.height - 0.5) * -16;
+    el.style.transform = `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg) translateZ(10px) scale(1.02)`;
+  };
+  const handleLeave = () => {
+    if (ref.current) ref.current.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px) scale(1)";
+  };
+
+  return (
+    <a ref={ref} href={link} target="_blank" rel="noopener noreferrer" onMouseMove={handleMove} onMouseLeave={handleLeave}
+       className="qr-card block relative p-8 rounded-[30px] bg-white/50 backdrop-blur-md border border-[#c5a880]/30 shadow-xl transition-transform duration-300 ease-out will-change-transform group">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#c5a880]/10 to-transparent rounded-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <h3 className="text-center font-serif text-[1.4rem] font-bold text-[#2c2416] mb-1">{title}</h3>
+      <p className="text-center font-sans text-[0.65rem] tracking-[0.2em] text-[#a07848] uppercase mb-6">{subtitle}</p>
+      
+      <div className="relative bg-white rounded-2xl p-4 shadow-inner mx-auto w-40 h-40 flex items-center justify-center border border-[#e8d5b0]">
+        <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#c5a880]" />
+        <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#c5a880]" />
+        <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#c5a880]" />
+        <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#c5a880]" />
+        <QrCode size={64} className="text-[#a07848] opacity-80 group-hover:scale-110 transition-transform duration-500" />
+      </div>
+      
+      <p className="text-center text-[0.7rem] text-[#6b5a3e] mt-6 font-sans tracking-wide leading-relaxed">
+        Scan or Click to Navigate<br/>via Google Maps
+      </p>
+    </a>
+  );
+}
+
+/* ─── Details Timeline Section ──────────────────────────── */
+function DetailsSection() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.from(".details-heading", { opacity: 0, y: 30, duration: 0.9, ease: "expo.out", scrollTrigger: { trigger: ref.current, start: "top 80%", once: true } });
+    gsap.from(".countdown-el", { opacity: 0, y: 30, duration: 1, delay: 0.3, ease: "expo.out", scrollTrigger: { trigger: ref.current, start: "top 80%", once: true } });
+    
+    gsap.from(".timeline-item", {
+      opacity: 0, x: -30, stagger: { amount: 0.5, ease: "power2.out" },
+      duration: 1.0, ease: "expo.out",
+      scrollTrigger: { trigger: ".timeline-container", start: "top 75%", once: true },
+    });
+
+    gsap.from(".qr-card", {
+      opacity: 0, scale: 0.9, y: 40, stagger: 0.3,
+      duration: 1.2, ease: "back.out(1.2)",
+      scrollTrigger: { trigger: ".qr-container", start: "top 80%", once: true },
+    });
+  }, { scope: ref });
+
+  return (
+    <section ref={ref} className="relative paper-texture overflow-hidden" style={{ paddingTop: "6rem", paddingBottom: "6rem" }}>
+      <img src="/floral-border.png" alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ opacity: 0.35, zIndex: 1 }} />
+      <div className="relative max-w-6xl mx-auto px-6 lg:px-12" style={{ zIndex: 10 }}>
+        
+        {/* Section Header & Countdown */}
+        <div className="text-center mb-16 details-heading">
+          <p className="font-sans text-[0.65rem] tracking-[0.35em] text-[#a07848] uppercase mb-2">The Details</p>
+          <h2 className="font-serif text-[clamp(2.2rem,5vw,3.5rem)] text-[#2c2416] italic">A Day of Blessings</h2>
+          <div className="gold-divider mt-4 max-w-xs mx-auto"><Heart size={14} color="#c5a880" fill="#c5a880" /></div>
+          
+          <CountdownTimer />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+          <div className="lg:col-span-7 timeline-container flex flex-col justify-center">
+            <div className="relative pl-8 md:pl-12 border-l border-dashed border-[#c5a880]/50 space-y-16 py-6">
+              
+              <div className="relative timeline-item">
+                <div className="absolute -left-[37px] md:-left-[53px] top-2 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+                <div className="flex items-center gap-3 mb-2">
+                  <Clock size={16} className="text-[#a07848]" />
+                  <span className="font-serif text-xl font-semibold text-[#2c2416]">11:30 AM</span>
+                </div>
+                <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Nikkah</h3>
+                <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                  <strong>Cheruvannur Vadakke Juma Masjid</strong><br/>Kolathara
+                </p>
+              </div>
+
+              <div className="relative timeline-item">
+                <div className="absolute -left-[37px] md:-left-[53px] top-2 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+                <div className="flex items-center gap-3 mb-2">
+                  <Clock size={16} className="text-[#a07848]" />
+                  <span className="font-serif text-xl font-semibold text-[#2c2416]">12:30 PM</span>
+                </div>
+                <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Wedding Lunch</h3>
+                <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                  <strong>We One Auditorium</strong><br/>Cheruvannur
+                </p>
+              </div>
+
+              <div className="relative timeline-item">
+                <div className="absolute -left-[37px] md:-left-[53px] top-2 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+                <div className="flex items-center gap-3 mb-2">
+                  <Calendar size={16} className="text-[#a07848]" />
+                  <span className="font-serif text-xl font-semibold text-[#2c2416]">Same Date (July 23, 2026)</span>
+                </div>
+                <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Reception & Engagement</h3>
+                <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                  <strong>Hall Alankar Auditorium</strong><br/>Under Flyover, Mathottam, Meenchanda
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-5 qr-container flex flex-col sm:flex-row lg:flex-col gap-8 justify-center items-center">
+            <div className="w-full max-w-[320px]">
+              <QRScannerCard 
+                title="Nikkah & Lunch" subtitle="Cheruvannur & Kolathara"
+                link="https://www.google.com/maps/place/We+One+Auditorium,+Kolathara/@11.1951646,75.8283184,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba65a6d4345e907:0x83b4ad8930b4439f!8m2!3d11.1951593!4d75.8308933!16s%2Fg%2F11dxm7p71z?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D"
+              />
+            </div>
+            <div className="w-full max-w-[320px]">
+              <QRScannerCard 
+                title="Reception" subtitle="Alankar Auditorium, Meenchanda"
+                link="https://www.google.com/maps/place/ALANKAR+AUDITORIUM/@11.2116398,75.7945212,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba659c7768c9d71:0xe48bb7eddf6f3d27!8m2!3d11.2116398!4d75.7970961!16s%2Fg%2F11fm2n_ylt?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Family Tree Section */}
+        <div className="family-section mt-24">
+          <div className="text-center mb-10">
+            <p className="font-sans text-[0.65rem] tracking-[0.35em] text-[#a07848] uppercase">With the Blessings of Our Families</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="family-card flex flex-col items-center text-center gap-2 p-8 rounded-[24px]" style={{ border: "1px solid rgba(197,168,128,0.3)", background: "rgba(255,248,238,0.5)" }}>
+              <p className="font-sans text-[0.65rem] tracking-[0.3em] text-[#a07848] uppercase">Groom</p>
+              <p className="font-script text-[2.2rem] text-[#2c2416]">Muhammed Nizamudheen C</p>
+              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#c5a880] to-transparent my-1" />
+              <p className="font-sans text-[0.8rem] text-[#6b5a3e] leading-relaxed">Son of<br/>Mr. Abdul Razak Chonari<br/>& Mrs. Naseema Melath</p>
+            </div>
+            <div className="family-card flex flex-col items-center text-center gap-2 p-8 rounded-[24px]" style={{ border: "1px solid rgba(197,168,128,0.3)", background: "rgba(255,248,238,0.5)" }}>
+              <p className="font-sans text-[0.65rem] tracking-[0.3em] text-[#a07848] uppercase">Bride</p>
+              <p className="font-script text-[2.2rem] text-[#2c2416]">Rumeeza V V</p>
+              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#c5a880] to-transparent my-1" />
+              <p className="font-sans text-[0.8rem] text-[#6b5a3e] leading-relaxed">Daughter of<br/>Mr. Sabeer VV<br/>& Mrs. Kamarunnisa T</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Announcement & Footer Section ─────────────────────── */
+function AnnouncementSection({ onRSVP }: { onRSVP: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useGSAP(() => {
+    gsap.from(".announce-el", { opacity: 0, y: 55, stagger: { amount: 0.6, ease: "power2.out" }, duration: 1.1, ease: "expo.out", scrollTrigger: { trigger: ref.current, start: "top 72%", once: true } });
+  }, { scope: ref });
+
+  const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Nikkah+of+Nizamudheen+%26+Rumeeza&dates=20260723T060000Z/20260723T100000Z&details=Nikkah+at+Cheruvannur+Vadakke+Juma+Masjid%2C+Kolathara.+Lunch+at+We+One+Auditorium%2C+Cheruvannur.&location=Cheruvannur+Vadakke+Juma+Masjid%2C+Kolathara`;
+
+  return (
+    <section ref={ref} className="relative paper-texture overflow-hidden" style={{ paddingTop: "7rem", paddingBottom: "8rem" }}>
+      <img src="/floral-border.png" alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ opacity: 0.4, zIndex: 1 }} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(197,168,128,0.12) 0%, transparent 70%)", zIndex: 2 }} />
+
+      <div className="relative max-w-3xl mx-auto px-6 text-center" style={{ zIndex: 10 }}>
+        <div className="announce-el">
+          <p className="font-sans text-[0.65rem] tracking-[0.35em] text-[#a07848] uppercase mb-2">Alhamdulillah · With the blessings of Allah</p>
+        </div>
+        <div className="announce-el">
+          <h2 className="font-script text-[clamp(3rem,8vw,5.5rem)] text-[#2c2416] leading-none">Nikkah Announcement!</h2>
+        </div>
+        <div className="announce-el gold-divider max-w-xs mx-auto my-8"><Heart size={14} color="#c5a880" fill="#c5a880" /></div>
+
+        <div className="announce-el my-10 px-8 py-10 rounded-3xl relative border border-[#c5a880]/35 bg-white/60 backdrop-blur-md">
+          {["top-3 left-3", "top-3 right-3", "bottom-3 left-3", "bottom-3 right-3"].map((pos, i) => (
+            <span key={i} className={`absolute ${pos} text-[#c5a880] text-base`}>✦</span>
+          ))}
+          <p className="font-serif text-[clamp(1.1rem,2.5vw,1.6rem)] text-[#3a2e20] italic leading-relaxed mb-3">"And We created you in pairs."</p>
+          <p className="font-sans text-[0.72rem] tracking-[0.25em] text-[#a07848] uppercase">— Qur&apos;an 78:8</p>
+        </div>
+
+        <div className="announce-el">
+          <p className="font-serif text-[clamp(1rem,2vw,1.3rem)] text-[#6b5a3e] italic leading-relaxed mb-10">May Allah bless the couple with love, mercy and a blessed life together.</p>
+        </div>
+
+        <div className="announce-el flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <motion.button onClick={onRSVP} id="rsvp-button"
+            className="px-10 py-4 rounded-2xl text-white font-medium transition-all font-sans text-[0.78rem] tracking-[0.2em] uppercase shadow-[0_8px_30px_rgba(160,120,72,0.35)]"
+            style={{ background: "linear-gradient(135deg,#c5a880,#a07848)" }}
+            whileHover={{ scale: 1.04, boxShadow: "0 12px 40px rgba(160,120,72,0.5)" }} whileTap={{ scale: 0.98 }}>
+            RSVP — Join Us
+          </motion.button>
+
+          <motion.a href={calUrl} target="_blank" rel="noopener noreferrer" id="add-to-calendar-button"
+            className="flex items-center gap-2 px-8 py-4 rounded-2xl transition-all border-[1.5px] border-[#c5a880]/60 font-sans text-[0.78rem] tracking-[0.15em] uppercase text-[#a07848] bg-white/50 backdrop-blur-sm"
+            whileHover={{ scale: 1.04, backgroundColor: "rgba(255,248,238,0.9)" }} whileTap={{ scale: 0.98 }}>
+            <Calendar size={16} /> Add to Calendar <ExternalLink size={13} />
+          </motion.a>
+        </div>
+
+        <div className="announce-el mt-16 pt-10 border-t border-[#c5a880]/25">
+          <p className="font-serif text-base text-[#a07848] italic">23 · 07 · 2026</p>
+          <p className="font-script text-[1.8rem] text-[#2c2416] mt-1">Nizamudheen &amp; Rumeeza</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Page ──────────────────────────────────────────────── */
+export default function Page() {
+  const [rsvpOpen, setRsvpOpen] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
+  
+  // Initialize Lenis Smooth Scroll
+  useSmoothScroll();
+
+  return (
+    <main>
+      <LoadingScreen onComplete={() => setPageLoaded(true)} />
+      <AudioPlayer />
+      <HeroSection isLoaded={pageLoaded} />
+      {pageLoaded && (
+        <>
+          <AnimateMarriage />
+          <DetailsSection />
+          <AnnouncementSection onRSVP={() => setRsvpOpen(true)} />
+          <RSVPModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} />
+        </>
+      )}
+    </main>
   );
 }
