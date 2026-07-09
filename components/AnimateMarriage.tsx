@@ -107,8 +107,8 @@ export default function AnimateMarriage() {
         },
       });
 
-      // Heading fades in
-      tl.from(headingRef.current, { opacity: 0, y: -40, duration: 0.8, ease: "power2.out" }, 0);
+      // Heading fades in with extra smoothness
+      tl.from(headingRef.current, { opacity: 0, y: -50, scale: 0.95, filter: "blur(5px)", duration: 1.2, ease: "power3.out" }, 0);
 
       // Stage 1: The Past (Kids photo scales down, blurs, fades)
       tl.to(kidsRef.current, { scale: 0.5, opacity: 0, filter: "blur(30px)", duration: 1.5, ease: "power2.inOut" }, 0.5);
@@ -144,10 +144,20 @@ export default function AnimateMarriage() {
         backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
       }} />
 
-      <div ref={headingRef} className="absolute top-[10%] left-0 w-full text-center z-20">
-        <h2 className="font-serif text-[#2c2416] text-[clamp(2rem,5vw,4rem)] italic font-medium drop-shadow-sm">
+      <div ref={headingRef} className="absolute top-[8%] left-0 w-full flex flex-col items-center justify-center text-center z-20 px-4" style={{ willChange: "transform, opacity, filter" }}>
+        <h3 className="text-[#c5a880] text-[clamp(2.5rem,5vw,3.5rem)] mb-2 drop-shadow-sm" style={{ fontFamily: "'Scheherazade New',serif" }}>
+          مَا شَاءَ ٱللَّٰهُ
+        </h3>
+        <h2 className="font-serif text-[#2c2416] text-[clamp(2.2rem,5vw,4.5rem)] italic font-medium drop-shadow-md leading-tight">
           These kids are getting married...
         </h2>
+        <div className="flex items-center gap-4 mt-4">
+          <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#c5a880]"></div>
+          <p className="font-sans text-[0.65rem] tracking-[0.35em] text-[#a07848] uppercase drop-shadow-sm">
+            A Journey of Love & Blessings
+          </p>
+          <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#c5a880]"></div>
+        </div>
       </div>
 
       {/* STAGE 1: Childhood Photo */}

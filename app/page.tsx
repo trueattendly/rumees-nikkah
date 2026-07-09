@@ -4,11 +4,78 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, X, Heart, ExternalLink, QrCode, Music, VolumeX } from "lucide-react";
+import { Calendar, Clock, Heart, ExternalLink, QrCode, Music, VolumeX } from "lucide-react";
 import AnimateMarriage from "@/components/AnimateMarriage";
 import Lenis from "lenis";
 
+import { ThemeProvider, createTheme, Dialog, DialogTitle, DialogContent, TextField, Select, MenuItem, InputLabel, FormControl, Button, IconButton, Fab, Paper, Card, CardContent } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
 gsap.registerPlugin(ScrollTrigger);
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#a07848',
+      light: '#c5a880',
+      dark: '#6b5a3e',
+      contrastText: '#fff8ee',
+    },
+    secondary: {
+      main: '#2c2416',
+    },
+    background: {
+      default: '#f9f6f0',
+      paper: '#fff8ee',
+    },
+    text: {
+      primary: '#2c2416',
+      secondary: '#6b5a3e',
+    },
+  },
+  typography: {
+    fontFamily: "'Jost', sans-serif",
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'rgba(255, 248, 238, 0.7)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: 24,
+        }
+      }
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 24,
+          border: '1px solid rgba(197, 168, 128, 0.3)',
+          boxShadow: '0 8px 32px rgba(44, 36, 22, 0.05)',
+        }
+      }
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 32,
+          backgroundColor: '#f9f6f0',
+          border: '1px solid rgba(197, 168, 128, 0.4)',
+          backgroundImage: 'none',
+        }
+      }
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          textTransform: 'uppercase',
+          letterSpacing: '0.2em',
+        }
+      }
+    }
+  }
+});
 
 /* ─── Global smooth-scroll ticker (Lenis + GSAP integration) ─────────── */
 function useSmoothScroll() {
@@ -85,7 +152,6 @@ function AudioPlayer() {
           await audioRef.current.play();
           setIsPlaying(true);
         } catch (error) {
-          // Autoplay blocked by browser policy. Wait for first interaction.
           const handleFirstInteraction = async () => {
             if (audioRef.current) {
               try {
@@ -127,7 +193,7 @@ function AudioPlayer() {
   );
 }
 
-/* ─── 3. Dynamic RSVP Modal (Formspree Ready) ───────────── */
+/* ─── 3. Dynamic RSVP Modal (MUI Integration) ───────────── */
 function RSVPModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState("");
   const [guests, setGuests] = useState("1");
@@ -137,10 +203,7 @@ function RSVPModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    // NOTE: To make this functional, create a free form at Formspree.io and replace the URL below.
     const formspreeEndpoint = "https://formspree.io/f/YOUR_FORM_ID_HERE"; 
-    
     try {
       if (formspreeEndpoint !== "https://formspree.io/f/YOUR_FORM_ID_HERE") {
         await fetch(formspreeEndpoint, {
@@ -149,63 +212,75 @@ function RSVPModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           body: JSON.stringify({ name, guests })
         });
       } else {
-        // Simulate network delay for the placeholder
         await new Promise(r => setTimeout(r, 1000));
       }
       setSent(true);
     } catch {
-      setSent(true); // Fallback
+      setSent(true);
     }
     setLoading(false);
   };
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 200 }}
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <motion.div className="absolute inset-0" style={{ background: "rgba(44,36,22,0.65)", backdropFilter: "blur(10px)" }} onClick={onClose} />
-          <motion.div className="relative w-full max-w-md rounded-[32px] p-10"
-            style={{ background: "#f9f6f0", border: "1px solid rgba(197,168,128,0.4)", zIndex: 1, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)" }}
-            initial={{ scale: 0.85, y: 40 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.85, y: 40 }} transition={{ type: "spring", damping: 22, stiffness: 200 }}>
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full hover:bg-[#e8d5b0] transition-colors">
-              <X size={18} color="#a07848" />
-            </button>
-            {sent ? (
-              <div className="text-center py-8">
-                <div className="text-5xl mb-4">🤍</div>
-                <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "2rem", color: "#2c2416" }}>JazakAllah Khair!</h3>
-                <p style={{ fontFamily: "'Jost',sans-serif", color: "#a07848", marginTop: 8 }}>Your RSVP has been received. May Allah bless you.</p>
-              </div>
-            ) : (
-              <>
-                <h3 className="text-center mb-6" style={{ fontFamily: "'Great Vibes',cursive", fontSize: "2.8rem", color: "#2c2416" }}>RSVP</h3>
-                <form onSubmit={submit} className="flex flex-col gap-5">
-                  <div>
-                    <label style={{ fontFamily: "'Jost',sans-serif", fontSize: "0.72rem", letterSpacing: "0.2em", color: "#a07848", textTransform: "uppercase" }}>Your Name</label>
-                    <input required value={name} onChange={e => setName(e.target.value)}
-                      className="w-full mt-2 px-4 py-4 rounded-2xl outline-none transition-all border border-[#c5a880]/30 focus:border-[#a07848] bg-white/50 shadow-inner"
-                      style={{ fontFamily: "'Jost',sans-serif", color: "#2c2416" }} placeholder="Enter your full name" />
-                  </div>
-                  <div>
-                    <label style={{ fontFamily: "'Jost',sans-serif", fontSize: "0.72rem", letterSpacing: "0.2em", color: "#a07848", textTransform: "uppercase" }}>Number of Guests</label>
-                    <select value={guests} onChange={e => setGuests(e.target.value)}
-                      className="w-full mt-2 px-4 py-4 rounded-2xl outline-none transition-all border border-[#c5a880]/30 focus:border-[#a07848] bg-white/50 shadow-inner"
-                      style={{ fontFamily: "'Jost',sans-serif", color: "#2c2416" }}>
-                      {["1","2","3","4","5+"].map(n => <option key={n}>{n}</option>)}
-                    </select>
-                  </div>
-                  <button type="submit" disabled={loading} className="w-full py-4 rounded-2xl mt-4 transition-all hover:scale-[1.02] flex justify-center items-center h-14"
-                    style={{ background: "linear-gradient(135deg,#c5a880,#a07848)", color: "#fff8ee", fontFamily: "'Jost',sans-serif", letterSpacing: "0.2em", fontSize: "0.8rem", textTransform: "uppercase", boxShadow: "0 10px 20px rgba(160,120,72,0.3)" }}>
-                    {loading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : "Confirm Attendance"}
-                  </button>
-                </form>
-              </>
-            )}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ m: 0, p: 4, pb: 2, textAlign: 'center', fontFamily: "'Great Vibes', cursive", fontSize: "2.8rem", color: "#2c2416" }}>
+        {sent ? "" : "RSVP"}
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 16,
+            top: 16,
+            color: '#a07848',
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ p: 4, pt: 0 }}>
+        {sent ? (
+          <div className="text-center py-4">
+            <div className="text-5xl mb-4">🤍</div>
+            <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "2rem", color: "#2c2416" }}>JazakAllah Khair!</h3>
+            <p style={{ fontFamily: "'Jost',sans-serif", color: "#a07848", marginTop: 8 }}>Your RSVP has been received. May Allah bless you.</p>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="flex flex-col gap-5 mt-2">
+            <TextField 
+              required 
+              label="Your Name" 
+              value={name} 
+              onChange={e => setName(e.target.value)}
+              fullWidth
+              variant="outlined"
+              color="primary"
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px', backgroundColor: 'rgba(255,255,255,0.5)' } }}
+            />
+            <FormControl fullWidth variant="outlined" color="primary">
+              <InputLabel>Number of Guests</InputLabel>
+              <Select
+                value={guests}
+                onChange={e => setGuests(e.target.value)}
+                label="Number of Guests"
+                sx={{ borderRadius: '16px', backgroundColor: 'rgba(255,255,255,0.5)' }}
+              >
+                {["1","2","3","4","5+"].map(n => <MenuItem key={n} value={n}>{n}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary" 
+              disabled={loading}
+              sx={{ py: 2, mt: 2, background: "linear-gradient(135deg,#c5a880,#a07848)", boxShadow: "0 10px 20px rgba(160,120,72,0.3)" }}
+            >
+              {loading ? "Confirming..." : "Confirm Attendance"}
+            </Button>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -322,7 +397,7 @@ function CountdownTimer() {
   );
 }
 
-/* ─── 3D QR Scanner Card ────────────────────────────────── */
+/* ─── 3D QR Scanner Card (MUI) ────────────────────────────────── */
 function QRScannerCard({ title, subtitle, link }: { title: string, subtitle: string, link: string }) {
   const ref = useRef<HTMLAnchorElement>(null);
   
@@ -338,28 +413,49 @@ function QRScannerCard({ title, subtitle, link }: { title: string, subtitle: str
   };
 
   return (
-    <a ref={ref} href={link} target="_blank" rel="noopener noreferrer" onMouseMove={handleMove} onMouseLeave={handleLeave}
-       className="qr-card block relative p-8 rounded-[30px] bg-white/50 backdrop-blur-md border border-[#c5a880]/30 shadow-xl transition-transform duration-300 ease-out will-change-transform group">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#c5a880]/10 to-transparent rounded-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <h3 className="text-center font-serif text-[1.4rem] font-bold text-[#2c2416] mb-1">{title}</h3>
-      <p className="text-center font-sans text-[0.65rem] tracking-[0.2em] text-[#a07848] uppercase mb-6">{subtitle}</p>
-      
-      <div className="relative bg-white rounded-2xl p-4 shadow-inner mx-auto w-40 h-40 flex items-center justify-center border border-[#e8d5b0]">
-        <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#c5a880]" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#c5a880]" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#c5a880]" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#c5a880]" />
-        <QrCode size={64} className="text-[#a07848] opacity-80 group-hover:scale-110 transition-transform duration-500" />
-      </div>
-      
-      <p className="text-center text-[0.7rem] text-[#6b5a3e] mt-6 font-sans tracking-wide leading-relaxed">
-        Scan or Click to Navigate<br/>via Google Maps
-      </p>
-    </a>
+    <Card 
+      ref={ref} 
+      component="a" 
+      href={link} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      onMouseMove={handleMove} 
+      onMouseLeave={handleLeave}
+      className="qr-card block group will-change-transform"
+      sx={{
+        textDecoration: 'none',
+        display: 'block',
+        position: 'relative',
+        p: 4,
+        overflow: 'visible',
+        transition: 'transform 0.3s ease-out',
+        background: 'rgba(255, 248, 238, 0.5)',
+        backdropFilter: 'blur(10px)',
+        '&:hover .gradient-bg': { opacity: 1 },
+      }}
+    >
+      <div className="gradient-bg absolute inset-0 bg-gradient-to-br from-[#c5a880]/10 to-transparent rounded-[24px] opacity-0 transition-opacity duration-500" />
+      <CardContent sx={{ p: 0, position: 'relative', zIndex: 2 }}>
+        <h3 className="text-center font-serif text-[1.4rem] font-bold text-[#2c2416] mb-1">{title}</h3>
+        <p className="text-center font-sans text-[0.65rem] tracking-[0.2em] text-[#a07848] uppercase mb-6">{subtitle}</p>
+        
+        <Paper elevation={0} sx={{ borderRadius: 4, p: 2, mx: 'auto', width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e8d5b0', position: 'relative', backgroundColor: 'white' }}>
+          <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#c5a880]" />
+          <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#c5a880]" />
+          <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#c5a880]" />
+          <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#c5a880]" />
+          <QrCode size={64} className="text-[#a07848] opacity-80 group-hover:scale-110 transition-transform duration-500" />
+        </Paper>
+        
+        <p className="text-center text-[0.7rem] text-[#6b5a3e] mt-6 font-sans tracking-wide leading-relaxed">
+          Scan or Click to Navigate<br/>via Google Maps
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 
-/* ─── Details Timeline Section ──────────────────────────── */
+/* ─── Details Timeline Section (MUI) ──────────────────────────── */
 function DetailsSection() {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -399,39 +495,45 @@ function DetailsSection() {
             <div className="relative pl-8 md:pl-12 border-l border-dashed border-[#c5a880]/50 space-y-16 py-6">
               
               <div className="relative timeline-item">
-                <div className="absolute -left-[37px] md:-left-[53px] top-2 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
-                <div className="flex items-center gap-3 mb-2">
-                  <Clock size={16} className="text-[#a07848]" />
-                  <span className="font-serif text-xl font-semibold text-[#2c2416]">11:30 AM</span>
-                </div>
-                <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Nikkah</h3>
-                <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
-                  <strong>Cheruvannur Vadakke Juma Masjid</strong><br/>Kolathara
-                </p>
+                <div className="absolute -left-[37px] md:-left-[53px] top-8 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+                <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.2)' }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Clock size={16} className="text-[#a07848]" />
+                    <span className="font-serif text-xl font-semibold text-[#2c2416]">11:30 AM</span>
+                  </div>
+                  <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Nikkah</h3>
+                  <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                    <strong>Cheruvannur Vadakke Juma Masjid</strong><br/>Kolathara
+                  </p>
+                </Paper>
               </div>
 
               <div className="relative timeline-item">
-                <div className="absolute -left-[37px] md:-left-[53px] top-2 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
-                <div className="flex items-center gap-3 mb-2">
-                  <Clock size={16} className="text-[#a07848]" />
-                  <span className="font-serif text-xl font-semibold text-[#2c2416]">12:30 PM</span>
-                </div>
-                <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Wedding Lunch</h3>
-                <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
-                  <strong>We One Auditorium</strong><br/>Cheruvannur
-                </p>
+                <div className="absolute -left-[37px] md:-left-[53px] top-8 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+                <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.2)' }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Clock size={16} className="text-[#a07848]" />
+                    <span className="font-serif text-xl font-semibold text-[#2c2416]">12:30 PM</span>
+                  </div>
+                  <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Wedding Lunch</h3>
+                  <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                    <strong>We One Auditorium</strong><br/>Cheruvannur
+                  </p>
+                </Paper>
               </div>
 
               <div className="relative timeline-item">
-                <div className="absolute -left-[37px] md:-left-[53px] top-2 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
-                <div className="flex items-center gap-3 mb-2">
-                  <Calendar size={16} className="text-[#a07848]" />
-                  <span className="font-serif text-xl font-semibold text-[#2c2416]">Same Date (July 23, 2026)</span>
-                </div>
-                <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Reception & Engagement</h3>
-                <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
-                  <strong>Hall Alankar Auditorium</strong><br/>Under Flyover, Mathottam, Meenchanda
-                </p>
+                <div className="absolute -left-[37px] md:-left-[53px] top-8 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+                <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.2)' }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Calendar size={16} className="text-[#a07848]" />
+                    <span className="font-serif text-xl font-semibold text-[#2c2416]">Same Date (July 23, 2026)</span>
+                  </div>
+                  <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Reception & Engagement</h3>
+                  <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                    <strong>Hall Alankar Auditorium</strong><br/>Under Flyover, Mathottam, Meenchanda
+                  </p>
+                </Paper>
               </div>
             </div>
           </div>
@@ -458,18 +560,18 @@ function DetailsSection() {
             <p className="font-sans text-[0.65rem] tracking-[0.35em] text-[#a07848] uppercase">With the Blessings of Our Families</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            <div className="family-card flex flex-col items-center text-center gap-2 p-8 rounded-[24px]" style={{ border: "1px solid rgba(197,168,128,0.3)", background: "rgba(255,248,238,0.5)" }}>
+            <Paper elevation={0} className="family-card flex flex-col items-center text-center gap-2 p-8" sx={{ border: "1px solid rgba(197,168,128,0.3)" }}>
               <p className="font-sans text-[0.65rem] tracking-[0.3em] text-[#a07848] uppercase">Groom</p>
               <p className="font-script text-[2.2rem] text-[#2c2416]">Muhammed Nizamudheen C</p>
               <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#c5a880] to-transparent my-1" />
               <p className="font-sans text-[0.8rem] text-[#6b5a3e] leading-relaxed">Son of<br/>Mr. Abdul Razak Chonari<br/>& Mrs. Naseema Melath</p>
-            </div>
-            <div className="family-card flex flex-col items-center text-center gap-2 p-8 rounded-[24px]" style={{ border: "1px solid rgba(197,168,128,0.3)", background: "rgba(255,248,238,0.5)" }}>
+            </Paper>
+            <Paper elevation={0} className="family-card flex flex-col items-center text-center gap-2 p-8" sx={{ border: "1px solid rgba(197,168,128,0.3)" }}>
               <p className="font-sans text-[0.65rem] tracking-[0.3em] text-[#a07848] uppercase">Bride</p>
               <p className="font-script text-[2.2rem] text-[#2c2416]">Rumeeza V V</p>
               <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#c5a880] to-transparent my-1" />
               <p className="font-sans text-[0.8rem] text-[#6b5a3e] leading-relaxed">Daughter of<br/>Mr. Sabeer VV<br/>& Mrs. Kamarunnisa T</p>
-            </div>
+            </Paper>
           </div>
         </div>
       </div>
@@ -500,31 +602,52 @@ function AnnouncementSection({ onRSVP }: { onRSVP: () => void }) {
         </div>
         <div className="announce-el gold-divider max-w-xs mx-auto my-8"><Heart size={14} color="#c5a880" fill="#c5a880" /></div>
 
-        <div className="announce-el my-10 px-8 py-10 rounded-3xl relative border border-[#c5a880]/35 bg-white/60 backdrop-blur-md">
+        <Paper elevation={0} className="announce-el my-10 px-8 py-10 relative" sx={{ border: '1px solid rgba(197, 168, 128, 0.35)', backgroundColor: 'rgba(255, 255, 255, 0.6)' }}>
           {["top-3 left-3", "top-3 right-3", "bottom-3 left-3", "bottom-3 right-3"].map((pos, i) => (
             <span key={i} className={`absolute ${pos} text-[#c5a880] text-base`}>✦</span>
           ))}
           <p className="font-serif text-[clamp(1.1rem,2.5vw,1.6rem)] text-[#3a2e20] italic leading-relaxed mb-3">"And We created you in pairs."</p>
           <p className="font-sans text-[0.72rem] tracking-[0.25em] text-[#a07848] uppercase">— Qur&apos;an 78:8</p>
-        </div>
+        </Paper>
 
         <div className="announce-el">
           <p className="font-serif text-[clamp(1rem,2vw,1.3rem)] text-[#6b5a3e] italic leading-relaxed mb-10">May Allah bless the couple with love, mercy and a blessed life together.</p>
         </div>
 
         <div className="announce-el flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <motion.button onClick={onRSVP} id="rsvp-button"
-            className="px-10 py-4 rounded-2xl text-white font-medium transition-all font-sans text-[0.78rem] tracking-[0.2em] uppercase shadow-[0_8px_30px_rgba(160,120,72,0.35)]"
-            style={{ background: "linear-gradient(135deg,#c5a880,#a07848)" }}
-            whileHover={{ scale: 1.04, boxShadow: "0 12px 40px rgba(160,120,72,0.5)" }} whileTap={{ scale: 0.98 }}>
+          <Button onClick={onRSVP} id="rsvp-button"
+            variant="contained"
+            color="primary"
+            sx={{
+              px: 5, py: 2,
+              background: "linear-gradient(135deg,#c5a880,#a07848)",
+              boxShadow: "0 8px 30px rgba(160,120,72,0.35)",
+              transition: "all 0.3s ease",
+              '&:hover': {
+                transform: "scale(1.04)",
+                boxShadow: "0 12px 40px rgba(160,120,72,0.5)"
+              }
+            }}>
             RSVP — Join Us
-          </motion.button>
+          </Button>
 
-          <motion.a href={calUrl} target="_blank" rel="noopener noreferrer" id="add-to-calendar-button"
-            className="flex items-center gap-2 px-8 py-4 rounded-2xl transition-all border-[1.5px] border-[#c5a880]/60 font-sans text-[0.78rem] tracking-[0.15em] uppercase text-[#a07848] bg-white/50 backdrop-blur-sm"
-            whileHover={{ scale: 1.04, backgroundColor: "rgba(255,248,238,0.9)" }} whileTap={{ scale: 0.98 }}>
-            <Calendar size={16} /> Add to Calendar <ExternalLink size={13} />
-          </motion.a>
+          <Button href={calUrl} target="_blank" rel="noopener noreferrer" id="add-to-calendar-button"
+            variant="outlined"
+            sx={{
+              px: 4, py: 2,
+              border: "1.5px solid rgba(197, 168, 128, 0.6)",
+              color: "#a07848",
+              backgroundColor: "rgba(255, 255, 255, 0.5)",
+              backdropFilter: "blur(4px)",
+              transition: "all 0.3s ease",
+              '&:hover': {
+                transform: "scale(1.04)",
+                backgroundColor: "rgba(255, 248, 238, 0.9)",
+                borderColor: "rgba(197, 168, 128, 0.8)"
+              }
+            }}>
+            <Calendar size={16} className="mr-2" /> Add to Calendar <ExternalLink size={13} className="ml-2" />
+          </Button>
         </div>
 
         <div className="announce-el mt-16 pt-10 border-t border-[#c5a880]/25">
@@ -545,18 +668,44 @@ export default function Page() {
   useSmoothScroll();
 
   return (
-    <main>
-      <LoadingScreen onComplete={() => setPageLoaded(true)} />
-      <AudioPlayer />
-      <HeroSection isLoaded={pageLoaded} />
-      {pageLoaded && (
-        <>
-          <AnimateMarriage />
-          <DetailsSection />
-          <AnnouncementSection onRSVP={() => setRsvpOpen(true)} />
-          <RSVPModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} />
-        </>
-      )}
-    </main>
+    <ThemeProvider theme={theme}>
+      <main>
+        <LoadingScreen onComplete={() => setPageLoaded(true)} />
+        <AudioPlayer />
+        <HeroSection isLoaded={pageLoaded} />
+        {pageLoaded && (
+          <>
+            <AnimateMarriage />
+            <DetailsSection />
+            <AnnouncementSection onRSVP={() => setRsvpOpen(true)} />
+            <RSVPModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} />
+            
+            {/* Floating RSVP Button */}
+            <Fab 
+              color="primary" 
+              variant="extended" 
+              onClick={() => setRsvpOpen(true)}
+              sx={{ 
+                position: 'fixed', 
+                bottom: 24, 
+                left: 24, 
+                zIndex: 100,
+                background: "linear-gradient(135deg,#c5a880,#a07848)",
+                boxShadow: "0 8px 30px rgba(160,120,72,0.4)",
+                fontFamily: "'Jost', sans-serif",
+                letterSpacing: "0.2em",
+                padding: "0 24px",
+                transition: "transform 0.3s ease",
+                '&:hover': {
+                  transform: "scale(1.05)"
+                }
+              }}
+            >
+              RSVP
+            </Fab>
+          </>
+        )}
+      </main>
+    </ThemeProvider>
   );
 }
