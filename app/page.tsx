@@ -4,7 +4,8 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, Heart, ExternalLink, QrCode, Music, VolumeX } from "lucide-react";
+import { Calendar, Clock, Heart, ExternalLink, Music, VolumeX } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import AnimateMarriage from "@/components/AnimateMarriage";
 import Lenis from "lenis";
 
@@ -444,7 +445,14 @@ function QRScannerCard({ title, subtitle, link }: { title: string, subtitle: str
           <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#c5a880]" />
           <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#c5a880]" />
           <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#c5a880]" />
-          <QrCode size={64} className="text-[#a07848] opacity-80 group-hover:scale-110 transition-transform duration-500" />
+          <QRCodeSVG 
+            value={link} 
+            size={120} 
+            fgColor="#2c2416" 
+            bgColor="#ffffff" 
+            level="M" 
+            className="group-hover:scale-105 transition-transform duration-500"
+          />
         </Paper>
         
         <p className="text-center text-[0.7rem] text-[#6b5a3e] mt-6 font-sans tracking-wide leading-relaxed">
