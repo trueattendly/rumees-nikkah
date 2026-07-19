@@ -446,10 +446,10 @@ function DetailsSection() {
                     </p>
                   </div>
                   <div className="flex flex-col items-center justify-center shrink-0 self-center md:self-auto">
-                    <a href="https://maps.app.goo.gl/Pkt7myNwG7vmXrXZA" target="_blank" rel="noopener noreferrer" className="group block text-center">
+                    <a href="https://maps.app.goo.gl/qvWJoKtur7vSH8Dd9" target="_blank" rel="noopener noreferrer" className="group block text-center">
                       <Paper elevation={0} sx={{ borderRadius: 3, p: 1.5, width: 110, height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(197, 168, 128, 0.3)', backgroundColor: 'white', mb: 1, transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: '0 8px 24px rgba(160,120,72,0.12)' } }}>
                         <QRCodeSVG 
-                          value="https://maps.app.goo.gl/Pkt7myNwG7vmXrXZA" 
+                          value="https://maps.app.goo.gl/qvWJoKtur7vSH8Dd9" 
                           size={90} 
                           fgColor="#2c2416" 
                           bgColor="#ffffff" 
