@@ -398,71 +398,6 @@ function CountdownTimer() {
   );
 }
 
-/* ─── 3D QR Scanner Card (MUI) ────────────────────────────────── */
-function QRScannerCard({ title, subtitle, link }: { title: string, subtitle: string, link: string }) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  
-  const handleMove = (e: React.MouseEvent) => {
-    const el = ref.current; if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width - 0.5) * 16;
-    const y = ((e.clientY - r.top) / r.height - 0.5) * -16;
-    el.style.transform = `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg) translateZ(10px) scale(1.02)`;
-  };
-  const handleLeave = () => {
-    if (ref.current) ref.current.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px) scale(1)";
-  };
-
-  return (
-    <Card 
-      ref={ref} 
-      component="a" 
-      href={link} 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      onMouseMove={handleMove} 
-      onMouseLeave={handleLeave}
-      className="qr-card block group will-change-transform"
-      sx={{
-        textDecoration: 'none',
-        display: 'block',
-        position: 'relative',
-        p: 4,
-        overflow: 'visible',
-        transition: 'transform 0.3s ease-out',
-        background: 'rgba(255, 248, 238, 0.5)',
-        backdropFilter: 'blur(10px)',
-        '&:hover .gradient-bg': { opacity: 1 },
-      }}
-    >
-      <div className="gradient-bg absolute inset-0 bg-gradient-to-br from-[#c5a880]/10 to-transparent rounded-[24px] opacity-0 transition-opacity duration-500" />
-      <CardContent sx={{ p: 0, position: 'relative', zIndex: 2 }}>
-        <h3 className="text-center font-serif text-[1.4rem] font-bold text-[#2c2416] mb-1">{title}</h3>
-        <p className="text-center font-sans text-[0.65rem] tracking-[0.2em] text-[#a07848] uppercase mb-6">{subtitle}</p>
-        
-        <Paper elevation={0} sx={{ borderRadius: 4, p: 2, mx: 'auto', width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e8d5b0', position: 'relative', backgroundColor: 'white' }}>
-          <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#c5a880]" />
-          <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#c5a880]" />
-          <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#c5a880]" />
-          <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#c5a880]" />
-          <QRCodeSVG 
-            value={link} 
-            size={120} 
-            fgColor="#2c2416" 
-            bgColor="#ffffff" 
-            level="M" 
-            className="group-hover:scale-105 transition-transform duration-500"
-          />
-        </Paper>
-        
-        <p className="text-center text-[0.7rem] text-[#6b5a3e] mt-6 font-sans tracking-wide leading-relaxed">
-          Scan or Click to Navigate<br/>via Google Maps
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
 /* ─── Details Timeline Section (MUI) ──────────────────────────── */
 function DetailsSection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -476,18 +411,12 @@ function DetailsSection() {
       duration: 1.0, ease: "expo.out",
       scrollTrigger: { trigger: ".timeline-container", start: "top 75%", once: true },
     });
-
-    gsap.from(".qr-card", {
-      opacity: 0, scale: 0.9, y: 40, stagger: 0.3,
-      duration: 1.2, ease: "back.out(1.2)",
-      scrollTrigger: { trigger: ".qr-container", start: "top 80%", once: true },
-    });
   }, { scope: ref });
 
   return (
     <section ref={ref} className="relative paper-texture overflow-hidden" style={{ paddingTop: "6rem", paddingBottom: "6rem" }}>
       <img src="/floral-border.png" alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ opacity: 0.35, zIndex: 1 }} />
-      <div className="relative max-w-6xl mx-auto px-6 lg:px-12" style={{ zIndex: 10 }}>
+      <div className="relative max-w-4xl mx-auto px-6" style={{ zIndex: 10 }}>
         
         {/* Section Header & Countdown */}
         <div className="text-center mb-16 details-heading">
@@ -498,72 +427,115 @@ function DetailsSection() {
           <CountdownTimer />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-          <div className="lg:col-span-7 timeline-container flex flex-col justify-center">
-            <div className="relative pl-8 md:pl-12 border-l border-dashed border-[#c5a880]/50 space-y-16 py-6">
-              
-              <div className="relative timeline-item">
-                <div className="absolute -left-[37px] md:-left-[53px] top-8 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
-                <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.2)' }}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Clock size={16} className="text-[#a07848]" />
-                    <span className="font-serif text-xl font-semibold text-[#2c2416]">11:30 AM</span>
+        <div className="timeline-container">
+          <div className="relative pl-8 md:pl-16 border-l border-dashed border-[#c5a880]/50 space-y-12 py-6">
+            
+            {/* Nikkah */}
+            <div className="relative timeline-item">
+              <div className="absolute -left-[37px] md:-left-[53px] top-12 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+              <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.25)' }}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Clock size={16} className="text-[#a07848]" />
+                      <span className="font-serif text-xl font-semibold text-[#2c2416]">11:30 AM</span>
+                    </div>
+                    <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Nikkah Venue</h3>
+                    <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                      <strong>Cheruvannur Vadakke Juma Masjid</strong><br/>Kolathara
+                    </p>
                   </div>
-                  <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Nikkah</h3>
-                  <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
-                    <strong>Cheruvannur Vadakke Juma Masjid</strong><br/>Kolathara
-                  </p>
-                </Paper>
-              </div>
-
-              <div className="relative timeline-item">
-                <div className="absolute -left-[37px] md:-left-[53px] top-8 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
-                <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.2)' }}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Clock size={16} className="text-[#a07848]" />
-                    <span className="font-serif text-xl font-semibold text-[#2c2416]">12:30 PM</span>
+                  <div className="flex flex-col items-center justify-center shrink-0 self-center md:self-auto">
+                    <a href="https://maps.app.goo.gl/Pkt7myNwG7vmXrXZA" target="_blank" rel="noopener noreferrer" className="group block text-center">
+                      <Paper elevation={0} sx={{ borderRadius: 3, p: 1.5, width: 110, height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(197, 168, 128, 0.3)', backgroundColor: 'white', mb: 1, transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: '0 8px 24px rgba(160,120,72,0.12)' } }}>
+                        <QRCodeSVG 
+                          value="https://maps.app.goo.gl/Pkt7myNwG7vmXrXZA" 
+                          size={90} 
+                          fgColor="#2c2416" 
+                          bgColor="#ffffff" 
+                          level="M" 
+                          className="group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </Paper>
+                      <span className="font-sans text-[0.6rem] text-[#a07848] tracking-widest uppercase flex items-center justify-center gap-1 group-hover:underline">
+                        Navigate Masjid <ExternalLink size={10} />
+                      </span>
+                    </a>
                   </div>
-                  <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Wedding Lunch</h3>
-                  <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
-                    <strong>We One Auditorium</strong><br/>Cheruvannur
-                  </p>
-                </Paper>
-              </div>
+                </div>
+              </Paper>
+            </div>
 
-              <div className="relative timeline-item">
-                <div className="absolute -left-[37px] md:-left-[53px] top-8 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
-                <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.2)' }}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Calendar size={16} className="text-[#a07848]" />
-                    <span className="font-serif text-xl font-semibold text-[#2c2416]">Same Date (July 23, 2026)</span>
+            {/* Wedding Lunch */}
+            <div className="relative timeline-item">
+              <div className="absolute -left-[37px] md:-left-[53px] top-12 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+              <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.25)' }}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Clock size={16} className="text-[#a07848]" />
+                      <span className="font-serif text-xl font-semibold text-[#2c2416]">12:30 PM</span>
+                    </div>
+                    <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Wedding Lunch</h3>
+                    <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                      <strong>We One Auditorium</strong><br/>Cheruvannur, Kolathara
+                    </p>
                   </div>
-                  <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Reception & Engagement</h3>
-                  <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
-                    <strong>Hall Alankar Auditorium</strong><br/>Under Flyover, Mathottam, Meenchanda
-                  </p>
-                </Paper>
-              </div>
+                  <div className="flex flex-col items-center justify-center shrink-0 self-center md:self-auto">
+                    <a href="https://www.google.com/maps/place/We+One+Auditorium,+Kolathara/@11.1951646,75.8283184,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba65a6d4345e907:0x83b4ad8930b4439f!8m2!3d11.1951593!4d75.8308933!16s%2Fg%2F11dxm7p71z?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer" className="group block text-center">
+                      <Paper elevation={0} sx={{ borderRadius: 3, p: 1.5, width: 110, height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(197, 168, 128, 0.3)', backgroundColor: 'white', mb: 1, transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: '0 8px 24px rgba(160,120,72,0.12)' } }}>
+                        <QRCodeSVG 
+                          value="https://www.google.com/maps/place/We+One+Auditorium,+Kolathara/@11.1951646,75.8283184,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba65a6d4345e907:0x83b4ad8930b4439f!8m2!3d11.1951593!4d75.8308933!16s%2Fg%2F11dxm7p71z?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D" 
+                          size={90} 
+                          fgColor="#2c2416" 
+                          bgColor="#ffffff" 
+                          level="M" 
+                          className="group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </Paper>
+                      <span className="font-sans text-[0.6rem] text-[#a07848] tracking-widest uppercase flex items-center justify-center gap-1 group-hover:underline">
+                        Navigate Lunch <ExternalLink size={10} />
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </Paper>
             </div>
-          </div>
 
-          <div className="lg:col-span-5 qr-container flex flex-col sm:flex-row lg:flex-col gap-6 justify-center items-center">
-            <div className="w-full max-w-[320px]">
-              <QRScannerCard 
-                title="Nikkah Venue" subtitle="Vadakke Juma Masjid, Kolathara"
-                link="https://maps.app.goo.gl/Pkt7myNwG7vmXrXZA"
-              />
-            </div>
-            <div className="w-full max-w-[320px]">
-              <QRScannerCard 
-                title="Wedding Lunch" subtitle="We One Auditorium, Cheruvannur"
-                link="https://www.google.com/maps/place/We+One+Auditorium,+Kolathara/@11.1951646,75.8283184,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba65a6d4345e907:0x83b4ad8930b4439f!8m2!3d11.1951593!4d75.8308933!16s%2Fg%2F11dxm7p71z?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D"
-              />
-            </div>
-            <div className="w-full max-w-[320px]">
-              <QRScannerCard 
-                title="Reception Venue" subtitle="Alankar Auditorium, Meenchanda"
-                link="https://www.google.com/maps/place/ALANKAR+AUDITORIUM/@11.2116398,75.7945212,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba659c7768c9d71:0xe48bb7eddf6f3d27!8m2!3d11.2116398!4d75.7970961!16s%2Fg%2F11fm2n_ylt?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D"
-              />
+            {/* Reception */}
+            <div className="relative timeline-item">
+              <div className="absolute -left-[37px] md:-left-[53px] top-12 w-[10px] h-[10px] rounded-full bg-[#c5a880] shadow-[0_0_12px_#c5a880]" />
+              <Paper elevation={0} className="p-6 md:p-8" sx={{ border: '1px solid rgba(197, 168, 128, 0.25)' }}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Calendar size={16} className="text-[#a07848]" />
+                      <span className="font-serif text-xl font-semibold text-[#2c2416]">Same Date (July 23, 2026)</span>
+                    </div>
+                    <h3 className="font-serif text-3xl text-[#a07848] italic mb-3">Reception & Engagement</h3>
+                    <p className="font-sans text-[0.85rem] text-[#6b5a3e] leading-relaxed max-w-md">
+                      <strong>Hall Alankar Auditorium</strong><br/>Under Flyover, Mathottam, Meenchanda
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center justify-center shrink-0 self-center md:self-auto">
+                    <a href="https://www.google.com/maps/place/ALANKAR+AUDITORIUM/@11.2116398,75.7945212,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba659c7768c9d71:0xe48bb7eddf6f3d27!8m2!3d11.2116398!4d75.7970961!16s%2Fg%2F11fm2n_ylt?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer" className="group block text-center">
+                      <Paper elevation={0} sx={{ borderRadius: 3, p: 1.5, width: 110, height: 110, display: 'flex', alignItems: 'center', justify: 'center', border: '1px solid rgba(197, 168, 128, 0.3)', backgroundColor: 'white', mb: 1, transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: '0 8px 24px rgba(160,120,72,0.12)' } }}>
+                        <QRCodeSVG 
+                          value="https://www.google.com/maps/place/ALANKAR+AUDITORIUM/@11.2116398,75.7945212,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba659c7768c9d71:0xe48bb7eddf6f3d27!8m2!3d11.2116398!4d75.7970961!16s%2Fg%2F11fm2n_ylt?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D" 
+                          size={90} 
+                          fgColor="#2c2416" 
+                          bgColor="#ffffff" 
+                          level="M" 
+                          className="group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </Paper>
+                      <span className="font-sans text-[0.6rem] text-[#a07848] tracking-widest uppercase flex items-center justify-center gap-1 group-hover:underline">
+                        Navigate Reception <ExternalLink size={10} />
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </Paper>
             </div>
           </div>
         </div>
