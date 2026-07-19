@@ -546,16 +546,22 @@ function DetailsSection() {
             </div>
           </div>
 
-          <div className="lg:col-span-5 qr-container flex flex-col sm:flex-row lg:flex-col gap-8 justify-center items-center">
+          <div className="lg:col-span-5 qr-container flex flex-col sm:flex-row lg:flex-col gap-6 justify-center items-center">
             <div className="w-full max-w-[320px]">
               <QRScannerCard 
-                title="Nikkah & Lunch" subtitle="Cheruvannur & Kolathara"
+                title="Nikkah Venue" subtitle="Vadakke Juma Masjid, Kolathara"
+                link="https://maps.app.goo.gl/Pkt7myNwG7vmXrXZA"
+              />
+            </div>
+            <div className="w-full max-w-[320px]">
+              <QRScannerCard 
+                title="Wedding Lunch" subtitle="We One Auditorium, Cheruvannur"
                 link="https://www.google.com/maps/place/We+One+Auditorium,+Kolathara/@11.1951646,75.8283184,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba65a6d4345e907:0x83b4ad8930b4439f!8m2!3d11.1951593!4d75.8308933!16s%2Fg%2F11dxm7p71z?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D"
               />
             </div>
             <div className="w-full max-w-[320px]">
               <QRScannerCard 
-                title="Reception" subtitle="Alankar Auditorium, Meenchanda"
+                title="Reception Venue" subtitle="Alankar Auditorium, Meenchanda"
                 link="https://www.google.com/maps/place/ALANKAR+AUDITORIUM/@11.2116398,75.7945212,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba659c7768c9d71:0xe48bb7eddf6f3d27!8m2!3d11.2116398!4d75.7970961!16s%2Fg%2F11fm2n_ylt?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D"
               />
             </div>
